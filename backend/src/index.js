@@ -29,6 +29,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
+  'https://school-management-system-black-rho.vercel.app',
+  'https://school-management-system-black-rho.vercel.app/',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5174',
@@ -41,12 +43,19 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        /^http:\/\/localhost:\d+$/.test(origin) ||
-        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)
-      ) {
-        return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      try {
+        const hostname = new URL(origin).hostname;
+        if (
+          allowedOrigins.some((o) => o.replace(/\/$/, '') === cleanOrigin) ||
+          hostname.endsWith('.vercel.app') ||
+          hostname === 'localhost' ||
+          hostname === '127.0.0.1'
+        ) {
+          return callback(null, true);
+        }
+      } catch {
+        // Fallback for non-standard origins
       }
       return callback(null, true);
     },
